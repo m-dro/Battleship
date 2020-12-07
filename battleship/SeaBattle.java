@@ -4,6 +4,7 @@ import battleship.ships.*;
 
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,16 +76,43 @@ public class SeaBattle {
     }
 
     public void run(){
+        System.out.println("Player 1, place your ships on the game field\n");
         showGameField(openGamefield);
         placeShips();
+        waitForEnter();
+
+        System.out.println("Player 2, place your ships on the game field\n");
+        placeShips();
+        waitForEnter();
+
         playGame();
     }
 
+    public void waitForEnter() {
+        try (Scanner scanner = new Scanner(System.in)) {
+            String readString = scanner.nextLine();
+            while(readString!=null) {
+                System.out.println(readString);
+
+                if (readString.isEmpty()) {
+                    System.out.println("Press Enter and pass the move to another player");
+                }
+
+                if (scanner.hasNextLine()) {
+                    readString = scanner.nextLine();
+                } else {
+                    readString = null;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public void playGame() {
         System.out.println("\nThe game starts!\n");
         showGameField(coveredGamefield);
         System.out.println("\nTake a shot!\n");
-        while(anyShipsLeft(coveredGamefield)) {
+        while(anyShipsLeft(openGamefield)) {
             fight();
         }
         System.out.println("You sank the last ship. You won. Congratulations!");
@@ -103,7 +131,6 @@ public class SeaBattle {
             }
             System.out.println(); // move to new line
         }
-
     }
 
     /**
@@ -158,20 +185,26 @@ public class SeaBattle {
 
     public void fight() {
         String shot = readShot();
+        checkShot(shot);
+    }
+
+    public void checkShot(String shot) {
         int row = numericalCoordinate(shot.substring(0,1));
         int column = Integer.parseInt(shot.substring(1));
-        if (openGamefield[row][column] == 'O'){
+        if (openGamefield[row][column] == 'X') {
+            System.out.println("You hit a ship! Try again");
+            showGameField(coveredGamefield);
+        } else if (openGamefield[row][column] == 'O'){
             openGamefield[row][column] = 'X';
             coveredGamefield[row][column] = 'X';
             showGameField(coveredGamefield);
-            System.out.println("You hit a ship!");
+            damageShip(shot);
         } else {
             openGamefield[row][column] = 'M';
             coveredGamefield[row][column] = 'M';
             showGameField(coveredGamefield);
-            System.out.println("You missed!");
+            System.out.println("You missed! Try again");
         }
-        showGameField(openGamefield);
     }
 
     /**
@@ -190,6 +223,26 @@ public class SeaBattle {
             }
         }
         return false;
+    }
+
+    public void damageShip(String shot) {
+        Ship damagedShip = whichShip(shot);
+        damagedShip.getCoordinates().remove(shot);
+        if (damagedShip.getCoordinates().size() == 0) {
+            System.out.println("You sank a ship!");
+        } else {
+            System.out.println("You hit a ship!");
+            System.out.println("Press Enter and pass the move to another player");
+        }
+    }
+
+    public Ship whichShip (String shot) {
+        for (Ship ship : ships) {
+            if (ship.getCoordinates().contains(shot)) {
+                return ship;
+            }
+        }
+        return null;
     }
 
     public boolean isValid(String coordinate) {
@@ -404,9 +457,30 @@ public class SeaBattle {
     public void setShipCoordinates(Ship ship, String coordinates) {
         String startCoordinate = coordinates.substring(0, 3).trim();
         String endCoordinate = coordinates.substring(startCoordinate.length() + 1).trim();
+        Set<String> shipCoordinates = ship.getCoordinates();
 
         ship.setStartCoordinates(startCoordinate);
         ship.setEndCoordinates(endCoordinate);
+
+        Pattern pattern = Pattern.compile("(\\w{1})(\\d{1,3})\\s*(\\w{1})(\\d{1,3})");
+        Matcher matcher = pattern.matcher(coordinates);
+        matcher.matches();
+        String row = matcher.group(1);
+        int column = Integer.parseInt(matcher.group(2));
+
+        if(isHorizontal(coordinates)) {
+
+            for (int i = 0; i < ship.getSize(); i++) {
+                shipCoordinates.add("" + row + (column + i));
+            }
+
+        } else {
+            for (int i = 0; i < ship.getSize(); i++) {
+                char c = row.charAt(0);
+                int r = (int) c;
+                shipCoordinates.add("" + Character.toString(r + i) + column);
+            }
+        }
 
         markGamefield(ship);
     }

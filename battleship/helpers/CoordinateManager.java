@@ -3,32 +3,35 @@ package battleship.helpers;
 import battleship.ships.Ship;
 
 import java.util.Scanner;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CoordinateManager {
     private Ship[] ships;
-    private char[][] gameField;
+    private char[][] playerGamefield;
+    private char[][] opponentGamefield;
+//    private Scanner scanner = new Scanner(System.in); use this scanner
 
-    public CoordinateManager(Gamefield gamefield) {
+    public CoordinateManager(Gamefield gamefield, Ship[] ships) {
         this.ships = ships;
-        this.gameField = gameField;
+        playerGamefield = gamefield.getOpenGamefield();
+        opponentGamefield = gamefield.getCoveredGamefield();
     }
 
     /**
      * Displays the game field by printing each row.
      */
-    public void showGameField(){
+    public void showGameField(char[][] gamefield){
         String firstRow = "  1 2 3 4 5 6 7 8 9 10"; // top row are numbers
         System.out.println(firstRow);
 
-        for (int i = 0; i < gameField.length; i++) {
-            for (int j = 0; j < gameField[i].length; j++) {
-                System.out.print(gameField[i][j] + " ");
+        for (int i = 0; i < gamefield.length; i++) {
+            for (int j = 0; j < gamefield[i].length; j++) {
+                System.out.print(gamefield[i][j] + " ");
             }
             System.out.println(); // move to new line
         }
-
     }
 
     /**
@@ -45,11 +48,11 @@ public class CoordinateManager {
             name = ship.getName();
             size = ship.getSize();
 
-            System.out.printf("Enter the coordinates of the %s (%d cells)\n", name, size);
+            System.out.printf("\nEnter the coordinates of the %s (%d cells)\n\n", name, size);
             coordinates = readCoordinates(size);
 
             setShipCoordinates(ship, coordinates);
-            showGameField();
+            showGameField(playerGamefield);
         }
     }
 
@@ -150,7 +153,7 @@ public class CoordinateManager {
             }
         }
 
-        sanitizedCoordinates = "" + gameField[row1][0] + column1 + " " + gameField[row2][0] + column2;
+        sanitizedCoordinates = "" + playerGamefield[row1][0] + column1 + " " + playerGamefield[row2][0] + column2;
 //        System.out.println("SANITIZED: " + sanitizedCoordinates);
         return sanitizedCoordinates;
     }
@@ -209,7 +212,7 @@ public class CoordinateManager {
          */
         for (int i = startVertical; i <= endVertical; i++) {
             for (int j = startHorizontal; j <= endHorizontal; j++) {
-                if (gameField[i][j] == 'O') {
+                if (playerGamefield[i][j] == 'O') {
                     available = false;
                     break;
                 }
@@ -262,7 +265,7 @@ public class CoordinateManager {
          */
         for (int i = startVertical; i <= endVertical; i++) {
             for (int j = startHorizontal; j <= endHorizontal; j++) {
-                if (gameField[i][j] == 'O') {
+                if (playerGamefield[i][j] == 'O') {
                     available = false;
                     break;
                 }
@@ -276,9 +279,30 @@ public class CoordinateManager {
     public void setShipCoordinates(Ship ship, String coordinates) {
         String startCoordinate = coordinates.substring(0, 3).trim();
         String endCoordinate = coordinates.substring(startCoordinate.length() + 1).trim();
+        Set<String> shipCoordinates = ship.getCoordinates();
 
         ship.setStartCoordinates(startCoordinate);
         ship.setEndCoordinates(endCoordinate);
+
+        Pattern pattern = Pattern.compile("(\\w{1})(\\d{1,3})\\s*(\\w{1})(\\d{1,3})");
+        Matcher matcher = pattern.matcher(coordinates);
+        matcher.matches();
+        String row = matcher.group(1);
+        int column = Integer.parseInt(matcher.group(2));
+
+        if(isHorizontal(coordinates)) {
+
+            for (int i = 0; i < ship.getSize(); i++) {
+                shipCoordinates.add("" + row + (column + i));
+            }
+
+        } else {
+            for (int i = 0; i < ship.getSize(); i++) {
+                char c = row.charAt(0);
+                int r = (int) c;
+                shipCoordinates.add("" + Character.toString(r + i) + column);
+            }
+        }
 
         markGamefield(ship);
     }
@@ -294,7 +318,7 @@ public class CoordinateManager {
             int endColumn = parseColumn(coordinates, 2);
 
             for (int i = startColumn; i <= endColumn; i++) {
-                gameField[row][i] = 'O';
+                playerGamefield[row][i] = 'O';
             }
         } else { // if not horizontal, it must be vertical :)
             int column = parseColumn(coordinates, 1);
@@ -302,7 +326,7 @@ public class CoordinateManager {
             int endRow = parseRow(coordinates, 2);
 
             for (int i = startRow; i <= endRow; i++) {
-                gameField[i][column] = 'O';
+                playerGamefield[i][column] = 'O';
             }
         }
     }
