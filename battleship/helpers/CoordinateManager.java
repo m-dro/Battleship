@@ -10,13 +10,10 @@ import java.util.regex.Pattern;
 public class CoordinateManager {
     private Ship[] ships;
     private char[][] playerGamefield;
-    private char[][] opponentGamefield;
-//    private Scanner scanner = new Scanner(System.in); use this scanner
 
     public CoordinateManager(Gamefield gamefield, Ship[] ships) {
         this.ships = ships;
         playerGamefield = gamefield.getOpenGamefield();
-        opponentGamefield = gamefield.getCoveredGamefield();
     }
 
     /**
@@ -137,7 +134,7 @@ public class CoordinateManager {
         int column2 = parseColumn(sanitizedCoordinates, 2);
         int row1 = parseRow(sanitizedCoordinates, 1);
         int row2 = parseRow(sanitizedCoordinates, 2);
-//        System.out.println("col1: " + column1 + "\ncol2: " + column2 + "\nrow1: " + row1 + "\nrow2: " + row2);
+
         if (row1 == row2) {
             if (column1 > column2) {
                 int temp = column1;
@@ -154,7 +151,7 @@ public class CoordinateManager {
         }
 
         sanitizedCoordinates = "" + playerGamefield[row1][0] + column1 + " " + playerGamefield[row2][0] + column2;
-//        System.out.println("SANITIZED: " + sanitizedCoordinates);
+
         return sanitizedCoordinates;
     }
 

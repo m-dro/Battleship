@@ -12,11 +12,6 @@ import java.util.regex.Pattern;
 public class SeaBattle {
     Player player1 = new Player("Player 1");
     Player player2 = new Player("Player 2");
-    Gamefield p1Gamefield = player1.getGamefield();
-    Gamefield p2Gamefield = player2.getGamefield();
-    Ship[] p1Ships = player1.getShips();
-    Ship[] p2Ships = player2.getShips();
-
 
     public void run(){
         setup(player1);
