@@ -1,7 +1,5 @@
 package battleship.helpers;
 
-import battleship.ships.*;
-
 import java.util.Arrays;
 
 public class Gamefield {
