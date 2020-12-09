@@ -3,6 +3,25 @@ package battleship.ships;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Course: JetBrains Academy, Java Developer Track
+ * Project: Battleship
+ * Purpose: A console-based program to simulate the classic game Battleships.
+ *
+ * Ship (as abstract class) represents ships used in the game.
+ *
+ * Each ship has:
+ * <ul>
+ *     <li>name</li>
+ *     <li>size</li>
+ *     <li>startCoordinates</li>
+ *     <li>endCoordinates</li>
+ *     <li>set of all the coordinates that make up the ship</li>
+ * </ul>
+ *
+ * @author Mirek Drozd
+ * @version 1.1
+ */
 public abstract class Ship {
     private String name;
     private int size;

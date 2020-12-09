@@ -2,6 +2,22 @@ package battleship.helpers;
 
 import battleship.ships.*;
 
+/**
+ * Course: JetBrains Academy, Java Developer Track
+ * Project: Battleship
+ * Purpose: A console-based program to simulate the classic game Battleships.
+ *
+ * Player represents a player who is playing the game.
+ * This class holds references to:
+ * <ul>
+ *     <li>player's name</li>
+ *     <li>player's gamefield</li>
+ *     <li>player's ships</li>
+ * </ul>
+ *
+ * @author Mirek Drozd
+ * @version 1.1
+ */
 public class Player {
     private String name;
     private Gamefield gamefield = new Gamefield();

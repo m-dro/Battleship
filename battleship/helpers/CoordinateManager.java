@@ -7,6 +7,23 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Course: JetBrains Academy, Java Developer Track
+ * Project: Battleship
+ * Purpose: A console-based program to simulate the classic game Battleships.
+ *
+ * CoordinateManager is a helper class that manages gamefield- and coordinate-related operations.
+ * Each player has their own CoordinateManager.
+ *
+ * This class holds references to:
+ * <ul>
+ *     <li>player's ships</li>
+ *     <li>player's gamefield</li>
+ * </ul>
+ *
+ * @author Mirek Drozd
+ * @version 1.1
+ */
 public class CoordinateManager {
     private Ship[] ships;
     private char[][] playerGamefield;
@@ -17,7 +34,8 @@ public class CoordinateManager {
     }
 
     /**
-     * Displays the game field by printing each row.
+     * Displays the game field by printing each row of the gamefield to console
+     * @param gamefield to be printed to console
      */
     public void showGameField(char[][] gamefield){
         String firstRow = "  1 2 3 4 5 6 7 8 9 10"; // top row are numbers
@@ -33,6 +51,8 @@ public class CoordinateManager {
 
     /**
      * Asks the user to enter coordinates for their ships, one by one.
+     * After the user input is read, the coordinates are saved for that ship,
+     * and the gamefield is displayed to show all the ships placed so far.
      */
     public void placeShips() {
         Ship ship;
@@ -54,10 +74,10 @@ public class CoordinateManager {
     }
 
     /**
-     * Reads coordinates from standard input.
+     * Reads coordinates from standard input and validates them.
      *
-     * @param shipSize
-     * @return
+     * @param shipSize size of the ship (necessary to check if coordinates are valid)
+     * @return validated coordinates of the ship
      */
     public String readCoordinates(int shipSize) {
         Scanner scanner = new Scanner(System.in);
@@ -71,6 +91,20 @@ public class CoordinateManager {
 
     }
 
+    /**
+     * Validates coordinates entered by the player.
+     * There are 3 checks performed:
+     * 1) If format is valid (letters A-J followed by number 1-10)
+     * 2) If coordinates match length of the ship
+     * 3) If this ship is not being placed to close to another ship
+     *
+     * Only if all 3 requirements are satisfied are the coordinates considered valid.
+     *
+     * @param coordinates entered by the player
+     * @param shipSize size of the ship
+     * @return true if coordinates meet all requirements
+     *         false otherwise
+     */
     public boolean areValid(String coordinates, int shipSize) {
         if (!haveValidFormat(coordinates)){
             System.out.println("Error! Wrong format. Please use letters A-J and numbers 1-10:");
@@ -87,12 +121,29 @@ public class CoordinateManager {
         return true;
     }
 
+    /**
+     * Checks if the coordinates have valid format (letters A-J followed by number 1-10)
+     *
+     * @param coordinates entered by the player
+     * @return true of coordinates have valid format
+     *         false otherwise
+     */
     public boolean haveValidFormat(String coordinates) {
         Pattern pattern = Pattern.compile("([ABCDEFGHIJ](10|[0-9])\\s?){2}");
         Matcher matcher = pattern.matcher(coordinates);
         return matcher.find();
     }
 
+    /**
+     * Checks if the coordinates have correct size, considering the ship they are used for.
+     * For example, Submarine has size 3, so coordinates for Submarine must take up 3 positions
+     * on the gamefield (e.g. A1 - A3, or B4 - B6, or A2 - A4)
+     *
+     * @param coordinates entered by the player
+     * @param size of the ship
+     * @return true if coordinates have correct size
+     *         false otherwise
+     */
     public boolean haveCorrectSize(String coordinates, int size) {
         char firstLetter = coordinates.charAt(0);
         int firstNumber = parseColumn(coordinates, 1);
@@ -118,6 +169,13 @@ public class CoordinateManager {
         return false;
     }
 
+    /**
+     * Checks if the ship is not being placed too close to some other ship.
+     *
+     * @param coordinates of the ship being placed on the gamefield
+     * @return true if this ship is not being placed too close to any other ship
+     *         false otherwise
+     */
     public boolean areNotTooClose(String coordinates) {
         if(isHorizontal(coordinates)) {
             return checkProximityHorizontal(coordinates);
@@ -126,7 +184,14 @@ public class CoordinateManager {
         }
     }
 
-
+    /**
+     * Helper method to make sure coordinates entered by the user are not in reverse order
+     * (from right to left or from down to up).
+     * This method also removes any unnecessary whitespace and converts letters to upper case.
+     *
+     * @param coordinates entered by the user
+     * @return sanitized coordinates that can safely be used by other methods
+     */
     public String sanitizeCoordinates(String coordinates) {
         String sanitizedCoordinates = coordinates.strip().toUpperCase().replaceAll("\\s+", " ");
 
@@ -220,6 +285,17 @@ public class CoordinateManager {
         return available;
     }
 
+    /**
+     * Checks coordinates of new ships (to be placed vertically)
+     * to make sure that there aren't already any ships close by
+     * (ships cannot touch one another).
+     * Method starts checking from left upper corner (row - 1, col - 1)
+     * and ends checking in right lower corner (row + 1, col + 1)
+     *
+     * @param coordinates coordinates of new ship
+     * @return true if new coordinates are not too close to any previous ship,
+     *         false if new coordinates are too close to some previous ship
+     */
     public boolean checkProximityVertical(String coordinates) {
         // row, startColumn & endColumn describe the position of the new ship
         int column = parseColumn(coordinates, 1);
@@ -273,6 +349,13 @@ public class CoordinateManager {
         return available;
     }
 
+    /**
+     * Sets coordinates for the ship to facilitate checking if the ship was hit, in the future.
+     * The ship is then marked on the gamefield.
+     *
+     * @param ship to set the coordinates for
+     * @param coordinates to be set for the ship
+     */
     public void setShipCoordinates(Ship ship, String coordinates) {
         String startCoordinate = coordinates.substring(0, 3).trim();
         String endCoordinate = coordinates.substring(startCoordinate.length() + 1).trim();
@@ -304,6 +387,11 @@ public class CoordinateManager {
         markGamefield(ship);
     }
 
+    /**
+     * Marks a ship on the gamefield to visually represent the position of each ship.
+     *
+     * @param ship to be marked on the gamefield
+     */
     public void markGamefield(Ship ship) {
         String start = ship.getStartCoordinates();
         String end = ship.getEndCoordinates();
@@ -328,6 +416,13 @@ public class CoordinateManager {
         }
     }
 
+    /**
+     * Checks if the ship is being placed horizontally.
+     *
+     * @param coordinates of the ship
+     * @return true if the ship is being placed horizontally,
+     *         false otherwise
+     */
     public boolean isHorizontal(String coordinates) {
         int firstLetter = parseRow(coordinates, 1);
         int secondLetter = parseRow(coordinates, 2);
@@ -335,6 +430,13 @@ public class CoordinateManager {
         return (firstLetter == secondLetter);
     }
 
+    /**
+     * Checks if the ship is being placed vertically.
+     *
+     * @param coordinates of the ship
+     * @return true if the ship is being placed vertically,
+     *         false otherwise
+     */
     public boolean isVertical(String coordinates) {
         char firstNumber = coordinates.charAt(1);
         int secondNumber = coordinates.charAt(4);
@@ -342,6 +444,14 @@ public class CoordinateManager {
         return firstNumber == secondNumber;
     }
 
+    /**
+     * Coverts the letter parts of the coordinates into numerical form,
+     * to make it easier to operate on arrays, which are used for gamefields.
+     * (A is 0, B is 1, and so on)
+     *
+     * @param coordinate to have its letters turned into numbers
+     * @return
+     */
     public int numericalCoordinate(String coordinate) {
         char c = coordinate.charAt(0);
         int numberToDeduct = 65; // so that A is represented as 0
@@ -349,9 +459,9 @@ public class CoordinateManager {
     }
 
     /**
-     * Parses ship coordinates to get first or second column as a number.
+     * Parses ship coordinates (String) to get first or second column as a number.
      *
-     * @param coordinates ship coordinates
+     * @param coordinates of the ship
      * @param number of the column (1 for column in first coordinate, 2 for column in second coordinate)
      * @return
      */
@@ -367,6 +477,13 @@ public class CoordinateManager {
         return -1;
     }
 
+    /**
+     * Parses ship coordinates (String) to get first or second row as a number.
+     *
+     * @param coordinates of the ship
+     * @param number of the row (1 for row in first coordinate, 2 for row in second coordinate)
+     * @return
+     */
     public int parseRow(String coordinates, int number) {
         if (number == 1 || number == 2) {
             Pattern pattern = Pattern.compile("(\\w{1})\\d{1,3}\\s*(\\w{1})\\d{1,3}");
